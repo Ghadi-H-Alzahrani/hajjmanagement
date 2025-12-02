@@ -11,9 +11,9 @@ use Illuminate\Support\Facades\Auth;
 
 class ProjectFileController extends Controller
 {
-
     public function store(Request $request, Project $project)
     {
+     
         if ($project->assigned_manager_id !== Auth::id()) abort(403);
 
         $request->validate([
@@ -25,11 +25,12 @@ class ProjectFileController extends Controller
         $storedName = time() . '_' . preg_replace('/\s+/', '_', $origName);
         $path = $file->storeAs('public/project_files', $storedName);
 
-        ProjectFile::create([
+        $fileRecord= ProjectFile::create([
             'project_id' => $project->id,
             'file_name' => $origName,
             'file_path' => $path,
         ]);
+     
 
         return back()->with('success', 'تم رفع الملف بنجاح');
     }

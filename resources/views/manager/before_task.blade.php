@@ -1,119 +1,133 @@
 @extends('layouts.manager')
 
-@if (session('success'))
-    <div id="alert alert-success">
-        {{ session('success') }}
-    </div>
-@endif
-
-
-@section('title','إنشاء مهمة جديدة')
+@section('title','ماقبل التنفيذ')
 
 @section('content')
 <div class="row py-4">
   <div class="col-12 d-flex justify-content-between align-items-center mb-3">
-    <h4 class="m-0">مرحلة ماقبل التنفيذ</h4>
+    <h4 class="m-0 text-center">مرحلة ماقبل التنفيذ</h4>
     <div>
-      <a href="/manager/tasks" class="btn btn-sm" style="background:var(--purple-500);color:white"><i class="bi bi-arrow-left"></i> العودة</a>
+      <a href="{{ route('manager.tasks') }}" class="btn btn-sm" style="background:var(--purple-500);color:white">
+        <i class="bi bi-arrow-left"></i> العودة
+      </a>
     </div>
   </div>
 
+  <div class="col-12 mb-2">
+    @if(session('success'))
+      <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
 
-  <h6 class="mb-3">مرحله استلام التخصيص</h6>
+    @if($errors->any())
+      <div class="alert alert-danger">
+        <ul class="mb-0">
+          @foreach($errors->all() as $err)
+            <li>{{ $err }}</li>
+          @endforeach
+        </ul>
+      </div>
+    @endif
+  </div>
 
   <div class="col-12">
-    <form id="task-form" onsubmit="return false">
+    <div class="card" style="max-width:900px;margin:0 auto;padding:20px;background:white;">
+      <form id="task-form" action="{{ route('manager.projects.createTask.store', $project->id) }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        @method('PUT')
 
-    <div class="card p-3"> 
-        <div class="row g-3">
-          <div class="col-12 col-md-4">
-            <label class="form-label">هل تم استلام تخصيص الوزارة: <span class="text-danger">*</span></label>
-            <select id="field-mashaar" class="form-select required-field">
-              <option value="">اختر</option>
-              <option value="تم">تم</option>
-              <option value="لم ينم">لم يتم</option>
-            </select>
-          </div>
-          <div class="col-12 col-md-4">
-            <label class="form-label">في حال لم يتم مالسبب <span class="text-danger">*</span></label>
-            <input id="field-contractor" class="form-control required-field" placeholder="السبب">
-          </div>
-          <div class="col-12 col-md-4">
-            <label class="form-label">في حال تم ارفق الملف ( PDF)</label>
-            <input id="field-map-file" type="file" accept=".pdf" class="form-control">
-            <div id="map-file-name" class="small text-muted mt-1">لم يتم رفع ملف</div>
+        <h5 class="mb-3 text-center">مرحلة استلام التخصيص</h5>
+
+        <div class="card p-3 mb-3">
+          <div class="row g-3">
+            <div class="col-12 col-md-4">
+              <label class="form-label">هل تم استلام تخصيص الوزارة: <span class="text-danger">*</span></label>
+              <select name="pre_allocation_received" class="form-select">
+                <option value="">اختر</option>
+                <option value="تم" {{ old('pre_allocation_received', $project->pre_allocation_received ?? '') == 'تم' ? 'selected' : '' }}>تم</option>
+                <option value="لم يتم" {{ old('pre_allocation_received', $project->pre_allocation_received ?? '') == 'لم يتم' ? 'selected' : '' }}>لم يتم</option>
+              </select>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <label class="form-label">السبب <span class="text-danger">*</span></label>
+              <input name="pre_allocation_reason" value="{{ old('pre_allocation_reason', $project->pre_allocation_reason ?? '') }}" class="form-control" placeholder="السبب">
+            </div>
+
+            <div class="col-12 col-md-4">
+              <label class="form-label">ارفق الملف (PDF أو صور)</label>
+              <input name="pre_allocation_files[]" id="pre_allocation_files" type="file" class="form-control" accept=".pdf,.jpg,.jpeg,.png" multiple>
+              <div id="map-file-name" class="small text-muted mt-1">
+                @if($project->files->isNotEmpty()) مرفقات حالية: {{ $project->files->count() }} ملف @else لم يتم رفع ملف @endif
+              </div>
+            </div>
           </div>
         </div>
-    </div>
 
- <div class="card p-3">
- <div class="row g-3">
-         <div class="col-12 col-md-4">
-            <label class="form-label">هل تم استلام الموقع من كدانه : <span class="text-danger">*</span></label>
-            <select id="field-mashaar" class="form-select required-field">
-              <option value="">اختر</option>
-              <option value="تم">تم</option>
-              <option value="لم ينم">لم يتم</option>
-            </select>
-          </div>
-          <div class="col-12 col-md-4">
-            <label class="form-label">في حال لم يتم مالسبب <span class="text-danger">*</span></label>
-            <input id="field-contractor" class="form-control required-field" placeholder="السبب">
-          </div>
-          <div class="col-12 col-md-4">
-            <label class="form-label">في حال تم ارفق الملف ( PDF)</label>
-            <input id="field-map-file" type="file" accept=".pdf" class="form-control">
-            <div id="map-file-name" class="small text-muted mt-1">لم يتم رفع ملف</div>
-          </div>
- </div>         
-</div>
+        <div class="card p-3 mb-3">
+          <div class="row g-3">
+            <div class="col-12 col-md-4">
+              <label class="form-label">هل تم استلام الموقع من كدانه: <span class="text-danger">*</span></label>
+              <select name="site_received_from_kdana" class="form-select">
+                <option value="">اختر</option>
+                <option value="تم" {{ old('site_received_from_kdana', $project->site_received_from_kdana ?? '') == 'تم' ? 'selected' : '' }}>تم</option>
+                <option value="لم يتم" {{ old('site_received_from_kdana', $project->site_received_from_kdana ?? '') == 'لم يتم' ? 'selected' : '' }}>لم يتم</option>
+              </select>
+            </div>
 
-<div class="card p-3">      
- <div class="row g-3">
-         <div class="col-12 col-md-4">
-            <label class="form-label">هل تم استلام رخصة الاضافات : <span class="text-danger">*</span></label>
-            <select id="field-mashaar" class="form-select required-field">
-              <option value="">اختر</option>
-              <option value="تم">تم</option>
-              <option value="لم ينم">لم يتم</option>
-            </select>
-          </div>
-          <div class="col-12 col-md-4">
-            <label class="form-label">في حال لم يتم مالسبب <span class="text-danger">*</span></label>
-            <input id="field-contractor" class="form-control required-field" placeholder="السبب">
-          </div>
-          <div class="col-12 col-md-4">
-            <label class="form-label">في حال تم ارفق الملف ( PDF)</label>
-            <input id="field-map-file" type="file" accept=".pdf" class="form-control">
-            <div id="map-file-name" class="small text-muted mt-1">لم يتم رفع ملف</div>
-          </div>
-    </div>
-    </div>
+            <div class="col-12 col-md-4">
+              <label class="form-label">السبب <span class="text-danger">*</span></label>
+              <input name="site_received_reason" value="{{ old('site_received_reason', $project->site_received_reason ?? '') }}" class="form-control" placeholder="السبب">
+            </div>
 
+            <div class="col-12 col-md-4">
+              <label class="form-label">ارفق الملف ( PDF )</label>
+              <input name="site_received_files[]" type="file" class="form-control" accept=".pdf,.jpg,.jpeg,.png" multiple>
+            </div>
 
-        <div class="mt-4 d-flex gap-2">
-          <button id="alert alert-success" class="btn" style="background:var(--purple-500); color:white">ارسال</button>
+            <div class="col-12 col-md-4">
+              <label class="form-label">إعادة جدولة</label>
+              <input name="reschedule_date" type="date" class="form-control" value="{{ old('reschedule_date', $project->reschedule_date ?? '') }}">
+            </div>
+          </div>
+        </div>
+
+        <div class="card p-3 mb-3">
+          <div class="row g-3">
+            <div class="col-12 col-md-4">
+              <label class="form-label">هل تم استلام رخصة الإضافات: <span class="text-danger">*</span></label>
+              <select name="license_received" class="form-select">
+                <option value="">اختر</option>
+                <option value="تم" {{ old('license_received', $project->license_received ?? '') == 'تم' ? 'selected' : '' }}>تم</option>
+                <option value="لم يتم" {{ old('license_received', $project->license_received ?? '') == 'لم يتم' ? 'selected' : '' }}>لم يتم</option>
+              </select>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <label class="form-label">السبب <span class="text-danger">*</span></label>
+              <input name="license_reason" value="{{ old('license_reason', $project->license_reason ?? '') }}" class="form-control" placeholder="السبب">
+            </div>
+
+            <div class="col-12 col-md-4">
+              <label class="form-label">ارفق الملف ( PDF )</label>
+              <input name="license_files[]" type="file" class="form-control" accept=".pdf,.jpg,.jpeg,.png" multiple>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2 justify-content-end">
+          <button type="submit" class="btn" style="background:var(--purple-500); color:white">ارسال</button>
           <button id="btn-reset" type="button" class="btn btn-outline-secondary">إعادة تعيين</button>
         </div>
-
       </form>
     </div>
   </div>
-
-
-<div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-body text-end">
-        <h6 class="mb-3">تم إرسال المهمة </h6>
-        <pre id="collected-json" style="background:#f8f9fa;padding:12px;border-radius:6px; max-height:260px; overflow:auto;"></pre>
-        <div class="text-start mt-3">
-          <button class="btn btn-sm btn-primary" data-bs-dismiss="modal">حسنًا</button>
-        </div>
-      </div>
-    </div>
-  </div>
 </div>
 
-
+@push('scripts')
+<script>
+document.getElementById('btn-reset')?.addEventListener('click', function(){
+  document.getElementById('task-form').reset();
+});
+</script>
+@endpush
 @endsection

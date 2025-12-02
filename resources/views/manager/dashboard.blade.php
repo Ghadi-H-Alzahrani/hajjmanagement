@@ -9,7 +9,7 @@
     <ul class="nav nav-pills">
       <li class="nav-item"><a class="nav-link active" href="#">غير معتمد</a></li>
       <li class="nav-item"><a class="nav-link" href="#">تقارير</a></li>
-      <li class="nav-item"><a class="nav-link" href="/manager/tasks">المهام</a></li>
+      <li class="nav-item"><a class="nav-link" href="{{ route('manager.tasks') }}">المهام</a></li>
       <li class="nav-item"><a class="nav-link" href="{{ route('manager.tasks') }}">المشاريع</a></li>
     </ul>
   </div>
