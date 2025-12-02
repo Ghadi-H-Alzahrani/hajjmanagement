@@ -33,7 +33,7 @@ class ProjectController extends Controller
     {
         $this->authorizeManager($project);
         $project->load('files','assigned_manager');
-        return view('manager.projects.show', compact('project')); // optional; create view if needed
+        return view('manager.projects.show', compact('project'));
     }
 
     // Show create_task blade
@@ -45,14 +45,12 @@ class ProjectController extends Controller
     }
 
     /**
-     * Accepts PUT /manager/projects/{project}/create_task
-     * Handles both create_task and before_task form inputs (they post to same route).
+     * Store manager input for project (POST /manager/projects/{project}/create_task)
      */
     public function storeTask(Request $request, Project $project)
     {
         $this->authorizeManager($project);
 
-        
         $data = $request->validate([
             // core fields (manager fills)
             'mashaar' => 'nullable|string|max:255',
@@ -71,11 +69,11 @@ class ProjectController extends Controller
             // status
             'status' => ['nullable', Rule::in(['لم تبدأ','قيد التنفيذ','مكتملة'])],
 
-            // optional custom fields you added
+            // optional custom fields
             'ac_capacity' => 'nullable|numeric',
             'transformer_numbers' => 'nullable|string|max:255',
 
-            // pre-execution group (before task)
+            // pre-exec (optional)
             'pre_allocation_received' => ['nullable', Rule::in(['تم','لم يتم'])],
             'pre_allocation_reason' => 'nullable|string',
             'pre_allocation_files.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:20480',
@@ -91,31 +89,29 @@ class ProjectController extends Controller
             'license_files.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:20480',
         ]);
 
-        // handle single main map_file (existing logic)
+        // --- handle single map_file (store and DB record) ---
         if ($request->hasFile('map_file')) {
             $file = $request->file('map_file');
-            $filename = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
-            $file->storeAs('public/project_maps', $filename);
+            $origName = $file->getClientOriginalName();
+            $filename = time() . '_' . preg_replace('/\s+/', '_', $origName);
+            $path = $file->storeAs('public/project_maps', $filename);
 
-            // delete old file if exists
+            // delete old disk file if exists
             if ($project->map_file_name) {
                 Storage::delete('public/project_maps/' . $project->map_file_name);
             }
-            
+
+            // save filename to projects table
+            $data['map_file_name'] = $filename;
+
+            // create ProjectFile DB record
+            ProjectFile::create([
+                'project_id' => $project->id,
+                'file_name'  => $origName,
+                'file_path'  => $path,
+            ]);
         }
-        // save filename to projects table (existing behavior)
-    $data['map_file_name'] = $filename;
 
-    // --- NEW: create a ProjectFile record so it's visible in project_files table ---
-    // Ensure ProjectFile has fillable: ['project_id','file_name','file_path']
-    \App\Models\ProjectFile::create([
-        'project_id' => $project->id,
-        'file_name'  => $filename,
-        'file_path'  => $file,
-    ]);
-
-        
-       
         // helper: store multiple uploaded files into project_files table
         $storeFiles = function ($filesArray) use ($project) {
             $savedPaths = [];
@@ -131,22 +127,17 @@ class ProjectController extends Controller
                     'file_name' => $orig,
                     'file_path' => $path,
                 ]);
-                dd('here');
-                
-                
 
                 $savedPaths[] = $path;
-
-                // micro-sleep to reduce chance of identical file names
                 usleep(3000);
             }
             return $savedPaths;
         };
 
         // store sets of files (if submitted)
-        $preSaved = $storeFiles($request->file('pre_allocation_files'));
-        $siteSaved = $storeFiles($request->file('site_received_files'));
-        $licenseSaved = $storeFiles($request->file('license_files'));
+        $preSaved = $storeFiles($request->file('pre_allocation_files') ?: []);
+        $siteSaved = $storeFiles($request->file('site_received_files') ?: []);
+        $licenseSaved = $storeFiles($request->file('license_files') ?: []);
 
         // append saved file paths to JSON column pre_execution_files (if used)
         $existing = $project->pre_execution_files ?? [];
@@ -155,7 +146,19 @@ class ProjectController extends Controller
         // update only fields provided (do not nullify admin fields)
         $project->update(array_filter($data, fn($v) => $v !== null));
 
-        return redirect()->route('manager.before_task')->with('success', 'تم حفظ بيانات المشروع بنجاح');
+        // redirect to before_task page (pass project id)
+        return redirect()->route('manager.projects.before_task', $project->id)
+            ->with('success', 'تم حفظ بيانات المشروع بنجاح');
+    }
+
+    /**
+     * Show the "before task" / pre-execution page for a project.
+     */
+    public function before_task(Project $project)
+    {
+        $this->authorizeManager($project);
+        $project->load('files', 'assigned_manager');
+        return view('manager.before_task', compact('project')); // <- your blade is before_task
     }
 
     // simple manager authorization check

@@ -39,28 +39,26 @@ use App\Http\Controllers\Manager\ProjectFileController as ManagerProjectFileCont
 
 Route::prefix('manager')
     ->name('manager.')
-    ->middleware(['auth']) 
+    ->middleware(['auth'])
     ->group(function () {
 
-     
-        Route::get('dashboard', [App\Http\Controllers\Manager\ProjectController::class, 'dashboard'])
+        Route::get('dashboard', [ManagerProjectController::class, 'dashboard'])
             ->name('dashboard');
 
         // Tasks list
-        Route::get('tasks', [App\Http\Controllers\Manager\ProjectController::class, 'tasks'])
+        Route::get('tasks', [ManagerProjectController::class, 'tasks'])
             ->name('tasks');
 
-        // Show create_task blade
-        // Create task
-        Route::get('projects/{project}/create_task', [App\Http\Controllers\Manager\ProjectController::class,'createTask'])
+        // Show create_task blade (manager fills project details)
+        Route::get('projects/{project}/create_task', [ManagerProjectController::class, 'createTask'])
             ->name('projects.create_task');
 
-        Route::put('projects/{project}/create_task', [App\Http\Controllers\Manager\ProjectController::class,'storeTask'])
+        // Store manager-entered fields (use POST for simplicity)
+        Route::post('projects/{project}/create_task', [ManagerProjectController::class, 'storeTask'])
             ->name('projects.create_task.store');
 
-            
-    
-        Route::get('projects/{project}/before_task', [App\Http\Controllers\Manager\ProjectController::class, 'before_task'])
+        // before_task (pre-execution) page
+        Route::get('projects/{project}/before_task', [ManagerProjectController::class, 'before_task'])
             ->name('projects.before_task');
 
         // File endpoints

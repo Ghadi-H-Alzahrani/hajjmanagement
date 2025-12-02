@@ -31,9 +31,9 @@
 
   <div class="col-12">
     <div class="card" style="max-width:900px;margin:0 auto;padding:20px;background:white;">
-      <form id="task-form" action="{{ route('manager.projects.createTask.store', $project->id) }}" method="POST" enctype="multipart/form-data">
+      <!-- POST to same store route (manager.projects.create_task.store) -->
+      <form id="task-form" action="{{ route('manager.projects.create_task.store', $project->id) }}" method="POST" enctype="multipart/form-data">
         @csrf
-        @method('PUT')
 
         <h5 class="mb-3 text-center">مرحلة استلام التخصيص</h5>
 
@@ -63,6 +63,7 @@
           </div>
         </div>
 
+        <!-- second card -->
         <div class="card p-3 mb-3">
           <div class="row g-3">
             <div class="col-12 col-md-4">
@@ -91,6 +92,7 @@
           </div>
         </div>
 
+        <!-- third card -->
         <div class="card p-3 mb-3">
           <div class="row g-3">
             <div class="col-12 col-md-4">
