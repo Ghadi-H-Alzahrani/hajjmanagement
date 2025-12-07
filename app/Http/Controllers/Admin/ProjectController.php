@@ -16,7 +16,7 @@ class ProjectController extends Controller
         return view('admin.project', compact('projects'));
     }
 
-    // Show create form
+
     public function create()
     {
 
@@ -38,5 +38,6 @@ class ProjectController extends Controller
 
 
         return redirect()->route('admin.project.index')->with('success', 'تم إنشاء المشروع بنجاح');
-    }
+    } 
+    
 }
