@@ -9,14 +9,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('projects', function (Blueprint $table) {
-            // status (if not present yet)
+          
             if (!Schema::hasColumn('projects', 'status')) {
                 $table->enum('status', ['لم تبدأ', 'قيد التنفيذ', 'مكتملة'])
                       ->default('لم تبدأ')
                       ->after('assigned_manager_id');
             }
 
-            // optional technical / custom fields
+     
             if (!Schema::hasColumn('projects', 'ac_capacity')) {
                 $table->float('ac_capacity')->nullable()->after('tent_area');
             }
@@ -49,7 +49,6 @@ return new class extends Migration
                 $table->text('license_reason')->nullable()->after('license_received');
             }
 
-            // store list of pre-execution file paths/names if you want JSON (optional)
             if (!Schema::hasColumn('projects', 'pre_execution_files')) {
                 $table->json('pre_execution_files')->nullable()->after('license_reason');
             }
@@ -90,7 +89,7 @@ return new class extends Migration
                 $table->dropColumn('ac_capacity');
             }
 
-            // drop status only if it exists and you want to rollback it
+            
             if (Schema::hasColumn('projects', 'status')) {
                 $table->dropColumn('status');
             }

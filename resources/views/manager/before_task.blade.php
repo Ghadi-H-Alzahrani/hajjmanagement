@@ -15,24 +15,25 @@
 
   <div class="col-12 mb-2">
     @if(session('success'))
-      <div class="alert alert-success">{{ session('success') }}</div>
+    <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
     @if($errors->any())
-      <div class="alert alert-danger">
-        <ul class="mb-0">
-          @foreach($errors->all() as $err)
-            <li>{{ $err }}</li>
-          @endforeach
-        </ul>
-      </div>
+    <div class="alert alert-danger">
+      <ul class="mb-0">
+        @foreach($errors->all() as $err)
+        <li>{{ $err }}</li>
+        @endforeach
+      </ul>
+    </div>
     @endif
   </div>
 
   <div class="col-12">
     <div class="card" style="max-width:900px;margin:0 auto;padding:20px;background:white;">
-      <!-- POST to same store route (manager.projects.create_task.store) -->
-      <form id="task-form" action="{{ route('manager.projects.create_task.store', $project->id) }}" method="POST" enctype="multipart/form-data">
+      <form id="task-form"
+        action="{{ route('manager.projects.before_task.store', $project->id) }}"
+        method="POST" enctype="multipart/form-data">
         @csrf
 
         <h5 class="mb-3 text-center">مرحلة استلام التخصيص</h5>
@@ -127,9 +128,9 @@
 
 @push('scripts')
 <script>
-document.getElementById('btn-reset')?.addEventListener('click', function(){
-  document.getElementById('task-form').reset();
-});
+  document.getElementById('btn-reset')?.addEventListener('click', function() {
+    document.getElementById('task-form').reset();
+  });
 </script>
 @endpush
 @endsection

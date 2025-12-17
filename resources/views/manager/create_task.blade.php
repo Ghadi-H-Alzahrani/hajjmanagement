@@ -13,7 +13,7 @@
     </div>
   </div>
 
-  {{-- flash --}}
+  
   <div class="col-12 mb-2">
     @if(session('success'))
     <div class="alert alert-success">{{ session('success') }}</div>
@@ -30,7 +30,6 @@
     @endif
   </div>
 
-  {{-- Project header --}}
   <div class="col-12 mb-3">
     <div class="card p-2 card-ghost">
       <div class="d-flex align-items-start gap-3">
@@ -45,7 +44,7 @@
           <div class="mt-2">
             <div class="small text-muted">فريق العمل:</div>
             <div class="d-flex flex-wrap gap-2 mt-1">
-              {{-- optional team rendering --}}
+            
             </div>
           </div>
 
@@ -72,12 +71,11 @@
     </div>
   </div>
 
-  {{-- MAIN FORM (PUT) --}}
   <div class="col-12">
     <div class="card p-3">
       <h6 class="mb-3">البيانات التفصيلية للشاخص</h6>
 
-      {{-- NOTE: method PUT to match your route definition --}}
+   
       <form id="task-form" action="{{ route('manager.projects.create_task.store', $project->id) }}" method="POST" enctype="multipart/form-data">
         @csrf
 
@@ -170,7 +168,7 @@
         </div>
       </form>
 
-      {{-- SMALL UPLOAD FORM: must NOT be nested inside the main form --}}
+
       <hr class="my-3">
       <div class="mb-3">
         <h6 class="mb-2">رفع ملف جديد (مستقل)</h6>
@@ -181,7 +179,7 @@
         </form>
       </div>
 
-      {{-- existing files list --}}
+  
       <div class="mt-3">
         <h6 class="mb-2">ملفات المشروع</h6>
         @if($project->files->isEmpty())

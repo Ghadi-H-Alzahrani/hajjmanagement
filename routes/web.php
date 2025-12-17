@@ -60,6 +60,11 @@ Route::prefix('manager')
         // before_task (pre-execution) page
         Route::get('projects/{project}/before_task', [ManagerProjectController::class, 'before_task'])
             ->name('projects.before_task');
+        Route::post(
+            'projects/{project}/before_task',
+            [ManagerProjectController::class, 'storeBeforeTask']
+        )->name('projects.before_task.store');
+
 
         // File endpoints
         Route::post('projects/{project}/files', [ManagerProjectFileController::class, 'store'])
